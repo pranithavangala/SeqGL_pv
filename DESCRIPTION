@@ -1,4 +1,4 @@
-Package: SeqGL
+Package: SeqGL_pv
 Type: Package
 Title: Group lasso for Dnase/ChIP-seq data
 Version: 1.1.4
