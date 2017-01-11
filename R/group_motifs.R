@@ -51,7 +51,7 @@ group.motifs <- function (res.dir, dictionary.file,
 			dictionary.file, bed.file)
 
 		# Run homer
-		homer.cmd <- sprintf ("findMotifsGenome.pl -mknown /home/vangalap1/all_motif.motif -mcheck /home/vangalap1/all_motif.motif %s %s %s", bed.file, org, homer.dir)
+		homer.cmd <- sprintf ("findMotifsGenome.pl %s %s %s -mknown /home/vangalap1/all_motif.motif -mcheck /home/vangalap1/all_motif.motif ", bed.file, org, homer.dir)
 		homer.cmd <- sprintf ("%s -p 1 -size given -len 6,8,10,12 -noknown -mset vertebrates", homer.cmd)
 		system (homer.cmd)
 	}
