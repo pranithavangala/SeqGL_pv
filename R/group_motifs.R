@@ -52,7 +52,7 @@ group.motifs <- function (res.dir, dictionary.file,
 
 		# Run homer
 		homer.cmd <- sprintf ("findMotifsGenome.pl %s %s %s -mknown /home/pv84w/HOCOMOCOv11_core_MOUSE_mono_homer_format_0.001.motif -mcheck /home/pv84w/HOCOMOCOv11_core_MOUSE_mono_homer_format_0.001.motif ", bed.file, org, homer.dir)
-		homer.cmd <- sprintf ("%s -p 1 -size given -len 6,8,10,12 -noknown -mset vertebrates", homer.cmd)
+		homer.cmd <- sprintf ("%s -p 1 -size given -len 6,8,10,12 -noknown -mset /home/pv84w/HOCOMOCOv11_core_MOUSE_mono_homer_format_0.001.motif", homer.cmd)
 		system (homer.cmd)
 	}
 
