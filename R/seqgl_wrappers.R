@@ -81,8 +81,8 @@ run.seqGL.wrapper <- function (pos.regions, neg.regions, org='hg19', res.dir,
 #' @details SeqGL results will be available in \code{out.dir}
 #' @export
 
-run.seqGL <- function (peaks.file, out.dir, data.type, org,
-	span=150, max.examples=ifelse (data.type == 'ChIP', 5e3, 4e4),  no.cores = 1,
+run.seqGL <- function (peaks, Npeaks, out.dir, data.type, org,
+	span=200, max.examples=ifelse (data.type == 'ChIP', 5e3, 4e4),  no.cores = 1,
 	no.groups=ifelse (data.type == 'ChIP', 20, 100),
 	dictionary.file=system.file( "extdata/wildcard_dict_kmer8_mismatches2_alpha5_consecutive_mis.Rdata", package="SeqGL" )) {
 
@@ -106,9 +106,24 @@ run.seqGL <- function (peaks.file, out.dir, data.type, org,
 	show ('Determining training and test sets for SeqGL... ')
 	time.start <- get.time ()
 	# Read peaks, convert to GRanges and sort
-	regions <- read.table (peaks.file, stringsAsFactors=FALSE, header=TRUE)
-	all.regions <- GRanges (regions[,'chrom'], IRanges (regions[,'chromStart'], regions[,'chromEnd']),
-		score=regions[,'score'], summit=regions[,'summit'], name=regions[,'name'])
+	peaks = read.table ("early_sip_pairs_2_atac_summits.bed", header=TRUE)
+	peaks.gr=GRanges (peaks$chrom, IRanges (peaks$chromStart, peaks$chromEnd),summit=peaks$summit, name=peaks$name)
+ 	#span = 200
+ 	pos.regions = peaks.gr
+ 	start (pos.regions) = start (pos.regions) + pos.regions$summit - 1  
+ 	end (pos.regions) = start (pos.regions)
+ 	pos.regions = resize (pos.regions, span, fix='center')
+
+	#Then create positive and negative regions. Negative regions are created by shuffling
+	#the positive regions within 10000 bases of the H3K27ac peak they belong to.
+ 
+ 	Npeaks = read.table ("shuff_early_sip_pairs_2_atac_summits.bed", header=TRUE)
+ 	Npeaks.gr=GRanges (Npeaks$chrom, IRanges (Npeaks$chromStart, Npeaks$chromEnd),summit=Npeaks$summit, name=Npeaks$name)
+ 	#span = 200
+ 	neg.regions = peaks.gr
+ 	start (neg.regions) = start (neg.regions) + neg.regions$summit - 1  
+ 	end (neg.regions) = start (neg.regions)
+ 	neg.regions = resize (neg.regions, span, fix='center')
 
 	# Error checks
 	if (any (is.na (all.regions$name)))
@@ -117,14 +132,6 @@ run.seqGL <- function (peaks.file, out.dir, data.type, org,
 	   stop ("Please specify summit positions for all peaks using the 'summit' column in peaks file...")
 	if (any (is.na (all.regions$score)))
 	   stop ("Please specify scores for all peaks using the 'summit' column in peaks file...")
-
-	# Center peaks and find negatives
-	all.regions <- all.regions[sort (all.regions$score, index.return=TRUE, decreasing=TRUE)$ix]
-	start (all.regions) <- end (all.regions) <- start (all.regions) + all.regions$summit - 1
-	all.regions <- resize (all.regions, fix='center', span)
-
-	# Negative regions
-	neg.regions <- shift (all.regions, span * 2)
 
 	# Identify sequences and flag any sequences with N
 	pos.seqs <- get.seqs (load.bsgenome (org), all.regions)
