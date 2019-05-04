@@ -106,25 +106,9 @@ run.seqGL <- function (peaks, Npeaks, out.dir, data.type, org,
 	show ('Determining training and test sets for SeqGL... ')
 	time.start <- get.time ()
 	# Read peaks, convert to GRanges and sort
-	peaks = read.table ("early_sip_pairs_2_atac_summits.bed", header=TRUE)
-	peaks.gr=GRanges (peaks$chrom, IRanges (peaks$chromStart, peaks$chromEnd),summit=peaks$summit, name=peaks$name)
- 	#span = 200
- 	pos.regions = peaks.gr
- 	start (pos.regions) = start (pos.regions) + pos.regions$summit - 1  
- 	end (pos.regions) = start (pos.regions)
- 	pos.regions = resize (pos.regions, span, fix='center')
-
-	#Then create positive and negative regions. Negative regions are created by shuffling
-	#the positive regions within 10000 bases of the H3K27ac peak they belong to.
- 
- 	Npeaks = read.table ("shuff_early_sip_pairs_2_atac_summits.bed", header=TRUE)
- 	Npeaks.gr=GRanges (Npeaks$chrom, IRanges (Npeaks$chromStart, Npeaks$chromEnd),summit=Npeaks$summit, name=Npeaks$name)
- 	#span = 200
- 	neg.regions = peaks.gr
- 	start (neg.regions) = start (neg.regions) + neg.regions$summit - 1  
- 	end (neg.regions) = start (neg.regions)
- 	neg.regions = resize (neg.regions, span, fix='center')
-
+	regions <- read.table (peaks, stringsAsFactors=FALSE, header=TRUE)
+	all.regions <- GRanges (regions[,'chrom'], IRanges (regions[,'chromStart'], regions[,'chromEnd']),
+		score=regions[,'score'], summit=regions[,'summit'], name=regions[,'name'])
 	# Error checks
 	if (any (is.na (all.regions$name)))
 	   stop ("Please specify peak names for all peaks using the 'name' column in peaks file...")
@@ -133,6 +117,10 @@ run.seqGL <- function (peaks, Npeaks, out.dir, data.type, org,
 	if (any (is.na (all.regions$score)))
 	   stop ("Please specify scores for all peaks using the 'summit' column in peaks file...")
 
+	neg.regions=read.table (Npeaks, stringsAsFactors=FALSE, header=TRUE)
+	neg.regions <- GRanges (regions[,'chrom'], IRanges (regions[,'chromStart'], regions[,'chromEnd']),
+		score=regions[,'score'], summit=regions[,'summit'], name=regions[,'name'])
+	
 	# Identify sequences and flag any sequences with N
 	pos.seqs <- get.seqs (load.bsgenome (org), all.regions)
 	neg.seqs <- get.seqs (load.bsgenome (org), neg.regions)
@@ -146,7 +134,7 @@ run.seqGL <- function (peaks, Npeaks, out.dir, data.type, org,
 
 	# Positive and negative examples
 	pos.regions <- all.regions[1:min (max.examples, length (all.regions))]
-	neg.regions <- shift (pos.regions, span * 2)
+	#neg.regions <- shift (pos.regions, span * 2)
 
 	# Remove overlaps
 	use.inds <- which (countOverlaps (neg.regions, pos.regions)  == 0)
