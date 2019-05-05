@@ -178,7 +178,7 @@ run.seqGL <- function (peaks, Npeaks, out.dir, data.type, org,
 	}
 	all.features <- build.features.kernels (dictionary.file, seqs,
 		kmers=colnames (train.test.data$train.features), verbose=FALSE)$features
-	all.labels <- rep (c(1, -1), each=length (all.regions))
+	all.labels <- rep (c(1, -1), each=length (pos.seqs[-seqs.with.n]))
 
 	# Group members setups etc
 	peak.scores <- determine.peak.scores (all.features, all.labels, 
