@@ -170,7 +170,7 @@ run.seqGL <- function (peaks, Npeaks, out.dir, data.type, org,
 
 
     # Sequences and labels
-	all.negs <- shift (all.regions, span*2)
+	all.negs <- neg.regions
 	if (length(seqs.with.n) > 0) {
 		seqs <- c(pos.seqs[-seqs.with.n], neg.seqs[-seqs.with.n])
 	} else {
