@@ -37,7 +37,7 @@ run.seqGL.wrapper <- function (pos.regions, neg.regions, org='hg19', res.dir,
 	saveRDS (param.eval, file=sprintf ("%s/param_eval.Rds", res.dir))
 
 	# Run group lasso
-    inds <- which (param.eval$aucs.matrix == max (param.eval$aucs.matrix), arr.ind=TRUE)
+    inds <- which (param.eval$aucs.matrix == max (param.eval$aucs.matrix,na.rm=F), arr.ind=TRUE)
 	group.lasso.results <- run.group.lasso (train.test.data$train.features, train.test.data$train.labels,
 		train.test.data$test.features, train.test.data$test.labels, clustering.results$groups,
 		param.eval$lambdas[inds[1]], param.eval$lambdas[inds[2]], no.cores=no.cores)
@@ -134,7 +134,7 @@ run.seqGL <- function (peaks, Npeaks, out.dir, data.type, org,
 
 	# Positive and negative examples
 	pos.regions <- all.regions[1:min (max.examples, length (all.regions))]
-	#neg.regions <- shift (pos.regions, span * 2)
+	neg.regions <- neg.regions[1:min (max.examples, length (all.regions))]
 
 	# Remove overlaps
 	use.inds <- which (countOverlaps (neg.regions, pos.regions)  == 0)
@@ -177,7 +177,7 @@ run.seqGL <- function (peaks, Npeaks, out.dir, data.type, org,
 		seqs <- c(pos.seqs, neg.seqs)
 	}
 	all.features <- build.features.kernels (dictionary.file, seqs,
-		, kmers=colnames (train.test.data$train.features), verbose=FALSE)$features
+		kmers=colnames (train.test.data$train.features), verbose=FALSE)$features
 	all.labels <- rep (c(1, -1), each=length (all.regions))
 
 	# Group members setups etc
